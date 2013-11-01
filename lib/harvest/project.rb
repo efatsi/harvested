@@ -44,5 +44,16 @@ module Harvest
       end
       super(json)
     end
+
+    def self.non_admin_parse(json)
+      json = String === json ? JSON.parse(json) : json
+
+      project_json = json["projects"].map do |data|
+        data.delete("tasks")
+        {"project" => data}
+      end
+
+      parse(project_json)
+    end
   end
 end

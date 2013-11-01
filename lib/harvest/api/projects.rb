@@ -5,6 +5,21 @@ module Harvest
       
       include Harvest::Behavior::Crud
       
+     # Retrieves all projects
+     #
+     # Overriding #all defined in Harvest::Behavior::Crud since Harvest::NotFound is returned for
+     # @return [Array<Harvest::Project>] an array of Projects
+     def all(user = nil, query_options = {})
+       query = query_options.merge!(of_user_query(user))
+       begin
+         response = request(:get, credentials, "/projects", :query => query)
+         Harvest::Project.parse(response.parsed_response)
+       rescue Harvest::NotFound
+         response = request(:get, credentials, "/daily", :query => query)
+         Harvest::Project.non_admin_parse(response.parsed_response)
+       end
+     end
+
       # Creates and Assigns a task to the project
       #
       # == Examples
